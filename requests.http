@@ -1,0 +1,362 @@
+### ============================================================
+### CMMS API - IntelliJ HTTP Client requests
+### How to use:
+###   1. Make sure CmmsApplication is running (green Run tab, port 8080)
+###   2. Click the green ▶ icon next to any request below to run it
+###   3. Run "Login as Admin" first - it automatically saves the token
+###      for all requests below it (no copy-pasting needed)
+###   4. Response appears in a panel on the right inside IntelliJ
+### ============================================================
+
+@baseUrl = http://localhost:8080
+
+### Login as Admin (run this first - saves token automatically)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+    client.test("Login successful", function() {
+        client.assert(response.body.token, "No token returned");
+    });
+%}
+
+### Login as Technician (alternative - overwrites saved token with tech1's)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "tech1",
+  "password": "tech123"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+%}
+
+### Register a new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "newtech",
+  "password": "pass123",
+  "email": "newtech@cmms.com",
+  "role": "TECHNICIAN"
+}
+
+### Get current logged-in user
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### LOCATIONS
+### ============================================================
+
+### Get all locations
+GET {{baseUrl}}/api/locations
+Authorization: Bearer {{token}}
+
+### Get location by id
+GET {{baseUrl}}/api/locations/1
+Authorization: Bearer {{token}}
+
+### Create a location
+POST {{baseUrl}}/api/locations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Plant D - New Wing",
+  "description": "Newly added test location"
+}
+
+### Update a location
+PUT {{baseUrl}}/api/locations/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Plant A - Building 1 (Updated)",
+  "description": "Updated description"
+}
+
+### Delete a location (ADMIN only)
+DELETE {{baseUrl}}/api/locations/7
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### TECHNICIANS
+### ============================================================
+
+### Get all technicians
+GET {{baseUrl}}/api/technicians
+Authorization: Bearer {{token}}
+
+### Get technician by id
+GET {{baseUrl}}/api/technicians/1
+Authorization: Bearer {{token}}
+
+### Create a technician
+POST {{baseUrl}}/api/technicians
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Alex Johnson",
+  "email": "alex.johnson@cmms.com",
+  "phone": "555-0199",
+  "specialization": "Electrical"
+}
+
+### Update a technician
+PUT {{baseUrl}}/api/technicians/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Alex Johnson",
+  "email": "alex.johnson@cmms.com",
+  "phone": "555-0200",
+  "specialization": "Mechanical"
+}
+
+### Delete a technician (ADMIN only)
+DELETE {{baseUrl}}/api/technicians/7
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### ASSETS
+### ============================================================
+
+### Get all assets
+GET {{baseUrl}}/api/assets
+Authorization: Bearer {{token}}
+
+### Get asset by id
+GET {{baseUrl}}/api/assets/1
+Authorization: Bearer {{token}}
+
+### Get assets by status
+GET {{baseUrl}}/api/assets/status/OPERATIONAL
+Authorization: Bearer {{token}}
+
+### Get assets by location
+GET {{baseUrl}}/api/assets/location/1
+Authorization: Bearer {{token}}
+
+### Create an asset
+POST {{baseUrl}}/api/assets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "CNC Milling Machine",
+  "assetCode": "AST-999",
+  "category": "Machinery",
+  "manufacturer": "Haas",
+  "model": "VF-2",
+  "serialNumber": "SN-12345",
+  "purchaseDate": "2022-01-15",
+  "status": "OPERATIONAL",
+  "location": { "id": 1 }
+}
+
+### Update an asset
+PUT {{baseUrl}}/api/assets/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Asset Name",
+  "assetCode": "AST-001",
+  "category": "Machinery",
+  "manufacturer": "Haas",
+  "model": "VF-2",
+  "serialNumber": "SN-12345",
+  "purchaseDate": "2022-01-15",
+  "status": "UNDER_MAINTENANCE",
+  "location": { "id": 1 }
+}
+
+### Delete an asset (ADMIN only)
+DELETE {{baseUrl}}/api/assets/11
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### WORK ORDERS
+### ============================================================
+
+### Get all work orders
+GET {{baseUrl}}/api/work-orders
+Authorization: Bearer {{token}}
+
+### Get work order by id
+GET {{baseUrl}}/api/work-orders/1
+Authorization: Bearer {{token}}
+
+### Get work orders by status
+GET {{baseUrl}}/api/work-orders/status/OPEN
+Authorization: Bearer {{token}}
+
+### Get work orders by priority
+GET {{baseUrl}}/api/work-orders/priority/HIGH
+Authorization: Bearer {{token}}
+
+### Get work orders by asset
+GET {{baseUrl}}/api/work-orders/asset/1
+Authorization: Bearer {{token}}
+
+### Get work orders by technician
+GET {{baseUrl}}/api/work-orders/technician/1
+Authorization: Bearer {{token}}
+
+### Create a work order
+POST {{baseUrl}}/api/work-orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Replace worn spindle bearing",
+  "description": "Bearing showing signs of wear during inspection",
+  "asset": { "id": 1 },
+  "technician": { "id": 1 },
+  "type": "CORRECTIVE",
+  "priority": "HIGH",
+  "dueDate": "2026-08-15"
+}
+
+### Update a work order
+PUT {{baseUrl}}/api/work-orders/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Replace worn spindle bearing (updated)",
+  "description": "Updated description",
+  "type": "CORRECTIVE",
+  "priority": "CRITICAL",
+  "dueDate": "2026-08-20",
+  "technician": { "id": 2 }
+}
+
+### Update work order status only
+PATCH {{baseUrl}}/api/work-orders/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+### Delete a work order (ADMIN only)
+DELETE {{baseUrl}}/api/work-orders/13
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### MAINTENANCE SCHEDULES
+### ============================================================
+
+### Get all maintenance schedules
+GET {{baseUrl}}/api/maintenance-schedules
+Authorization: Bearer {{token}}
+
+### Get schedule by id
+GET {{baseUrl}}/api/maintenance-schedules/1
+Authorization: Bearer {{token}}
+
+### Get schedules by asset
+GET {{baseUrl}}/api/maintenance-schedules/asset/1
+Authorization: Bearer {{token}}
+
+### Get schedules due now or overdue
+GET {{baseUrl}}/api/maintenance-schedules/due
+Authorization: Bearer {{token}}
+
+### Create a maintenance schedule
+POST {{baseUrl}}/api/maintenance-schedules
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "asset": { "id": 1 },
+  "frequency": "MONTHLY",
+  "description": "Routine monthly inspection",
+  "lastMaintenanceDate": "2026-07-01",
+  "nextMaintenanceDate": "2026-08-01",
+  "active": true
+}
+
+### Update a maintenance schedule
+PUT {{baseUrl}}/api/maintenance-schedules/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "frequency": "QUARTERLY",
+  "description": "Updated maintenance plan",
+  "lastMaintenanceDate": "2026-07-01",
+  "nextMaintenanceDate": "2026-10-01",
+  "active": true
+}
+
+### Delete a maintenance schedule (ADMIN only)
+DELETE {{baseUrl}}/api/maintenance-schedules/7
+Authorization: Bearer {{token}}
+
+
+### ============================================================
+### SPARE PARTS
+### ============================================================
+
+### Get all spare parts
+GET {{baseUrl}}/api/spare-parts
+Authorization: Bearer {{token}}
+
+### Get spare part by id
+GET {{baseUrl}}/api/spare-parts/1
+Authorization: Bearer {{token}}
+
+### Get low-stock spare parts
+GET {{baseUrl}}/api/spare-parts/low-stock
+Authorization: Bearer {{token}}
+
+### Create a spare part
+POST {{baseUrl}}/api/spare-parts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Custom Test Part",
+  "partNumber": "PN-9999",
+  "quantityInStock": 15,
+  "reorderLevel": 5,
+  "unitCost": 24.99
+}
+
+### Update a spare part
+PUT {{baseUrl}}/api/spare-parts/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Part Name",
+  "partNumber": "PN-1000",
+  "quantityInStock": 2,
+  "reorderLevel": 5,
+  "unitCost": 19.99
+}
+
+### Delete a spare part (ADMIN only)
+DELETE {{baseUrl}}/api/spare-parts/11
+Authorization: Bearer {{token}}

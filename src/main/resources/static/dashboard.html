@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMMS — Dashboard</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="hazard-strip"></div>
+      <div class="sidebar-header">
+        <div class="mark">CM<span>MS</span></div>
+        <div class="role-badge" id="roleBadge">—</div>
+      </div>
+      <nav class="nav" id="nav">
+        <div class="nav-item active" data-view="overview"><span class="dot"></span><span class="label">Overview</span></div>
+        <div class="nav-item" data-view="assets"><span class="dot"></span><span class="label">Assets</span></div>
+        <div class="nav-item" data-view="workorders"><span class="dot"></span><span class="label">Work Orders</span></div>
+        <div class="nav-item" data-view="schedules"><span class="dot"></span><span class="label">Maintenance</span></div>
+        <div class="nav-item" data-view="technicians"><span class="dot"></span><span class="label">Technicians</span></div>
+        <div class="nav-item" data-view="locations"><span class="dot"></span><span class="label">Locations</span></div>
+        <div class="nav-item" data-view="parts"><span class="dot"></span><span class="label">Spare Parts</span></div>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost btn-block" id="logoutBtn">Sign Out</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h1 id="viewTitle">Overview</h1>
+        <div class="breadcrumb" id="userTag">—</div>
+      </div>
+      <div class="content" id="content">
+        <!-- rendered by dashboard.js -->
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="drawer">
+      <div class="drawer-head">
+        <h3 id="drawerTitle">New Record</h3>
+        <button class="close-btn" id="drawerClose">×</button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+      <div class="drawer-foot">
+        <button class="btn btn-amber" id="drawerSave">Save</button>
+        <button class="btn btn-ghost" id="drawerCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

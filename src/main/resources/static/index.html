@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMMS — Sign In</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="hazard-strip"></div>
+      <div class="login-body">
+        <div class="nameplate">
+          <span class="mark">CM<span>MS</span></span>
+        </div>
+        <div class="nameplate-sub">Maintenance Control Panel</div>
+
+        <div id="errorBox" class="error-msg"></div>
+
+        <form id="loginForm">
+          <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" autocomplete="username" required value="admin">
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" autocomplete="current-password" required value="admin123">
+          </div>
+          <button type="submit" class="btn btn-amber btn-block" id="loginBtn">Sign In →</button>
+        </form>
+
+        <div class="creds-hint">
+          <div><b>admin</b> / admin123 — full access</div>
+          <div><b>tech1</b> / tech123 — technician access</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="/js/api.js"></script>
+<script>
+  // Already logged in? skip straight to dashboard
+  if (CmmsApi.getToken()) {
+    window.location.href = '/dashboard.html';
+  }
+
+  const form = document.getElementById('loginForm');
+  const errorBox = document.getElementById('errorBox');
+  const loginBtn = document.getElementById('loginBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      const data = await CmmsApi.login(username, password);
+      CmmsApi.setToken(data.token, data.username, data.role);
+      window.location.href = '/dashboard.html';
+    } catch (err) {
+      errorBox.textContent = err.message || 'Login failed. Check your credentials.';
+      errorBox.style.display = 'block';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Sign In →';
+    }
+  });
+</script>
+</body>
+</html>
