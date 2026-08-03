@@ -77,6 +77,20 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                echo '========== BUILDING DOCKER IMAGE =========='
+
+                  sh '''
+                       docker build -t cmms-app:${BUILD_NUMBER} .
+                       docker tag cmms-app:${BUILD_NUMBER} cmms-app:latest
+
+                       echo "Docker image created successfully"
+                       docker images | grep cmms-app
+                     '''
+                 }
+          }
+
         stage('Archive Artifact') {
             steps {
                 echo '========== ARCHIVING ARTIFACT =========='
