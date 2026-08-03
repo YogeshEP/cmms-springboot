@@ -45,6 +45,20 @@ pipeline {
                 }
             }
         }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                echo '========== SONARQUBE ANALYSIS =========='
+
+                withSonarQubeEnv('SonarQube-CMMS') {
+                    sh '''
+                    mvn sonar:sonar \
+                  -Dsonar.projectKey=CMMS-Spring-Boot \
+                  -Dsonar.projectName="CMMS Spring Boot"
+               '''
+                  }
+             }
+          }
 
         stage('Maven Package') {
             steps {
