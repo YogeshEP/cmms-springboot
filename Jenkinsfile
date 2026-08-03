@@ -59,6 +59,16 @@ pipeline {
                 }
             }
         }
+        
+        stage('Quality Gate') {
+            steps {
+                echo '========== SONARQUBE QUALITY GATE =========='
+
+                timeout(time: 5, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+                 }
+             }
+         }
 
         stage('Maven Package') {
             steps {
