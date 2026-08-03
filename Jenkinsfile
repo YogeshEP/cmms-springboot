@@ -52,9 +52,11 @@ pipeline {
 
                 withSonarQubeEnv('SonarQube-CMMS') {
                     sh '''
-                    mvn sonar:sonar \
-                  -Dsonar.projectKey=CMMS-Spring-Boot \
-                  -Dsonar.projectName="CMMS Spring Boot"
+                    sh '''
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                          -Dsonar.projectKey=CMMS-Spring-Boot \
+                          -Dsonar.projectName="CMMS Spring Boot"
+            '''
                '''
                   }
              }
