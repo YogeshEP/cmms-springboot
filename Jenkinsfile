@@ -45,22 +45,20 @@ pipeline {
                 }
             }
         }
-        
+
         stage('SonarQube Analysis') {
             steps {
                 echo '========== SONARQUBE ANALYSIS =========='
 
                 withSonarQubeEnv('SonarQube-CMMS') {
                     sh '''
-                    sh '''
                         mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                           -Dsonar.projectKey=CMMS-Spring-Boot \
                           -Dsonar.projectName="CMMS Spring Boot"
-            '''
-               '''
-                  }
-             }
-          }
+                    '''
+                }
+            }
+        }
 
         stage('Maven Package') {
             steps {
@@ -87,6 +85,7 @@ pipeline {
             ==========================================
             Checkout        : SUCCESS
             Maven Test      : SUCCESS
+            SonarQube       : SUCCESS
             Maven Package   : SUCCESS
             Artifact        : ARCHIVED
             ==========================================
