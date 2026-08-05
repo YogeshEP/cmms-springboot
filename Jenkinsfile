@@ -1,4 +1,4 @@
-pipeline {
+	pipeline {
     agent any
 
     environment {
@@ -90,6 +90,36 @@ pipeline {
                      '''
                  }
           }
+
+        stage('Push Image to ECR') {
+            steps {
+                echo '========== PUSHING IMAGE TO AWS ECR =========='
+
+                sh '''
+                    ECR_REGISTRY="135692633479.dkr.ecr.ap-south-1.amazonaws.com"
+                    ECR_REPOSITORY="cmms-app"
+
+                    echo "Logging in to Amazon ECR..."
+                    aws ecr get-login-password --region ap-south-1 | \
+                    docker login --username AWS --password-stdin $ECR_REGISTRY
+
+                    echo "Tagging Docker images..."
+                    docker tag cmms-app:${BUILD_NUMBER} \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:${BUILD_NUMBER}
+
+                    docker tag cmms-app:${BUILD_NUMBER} \
+                      $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+                    echo "Pushing build ${BUILD_NUMBER}..."
+                    docker push $ECR_REGISTRY/$ECR_REPOSITORY:${BUILD_NUMBER}
+
+                    echo "Pushing latest..."
+                    docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+                    echo "ECR push completed successfully."
+                '''
+            }
+        }
 
         stage('Deploy CMMS') {
             steps {
