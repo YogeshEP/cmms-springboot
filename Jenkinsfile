@@ -123,45 +123,65 @@
 
         stage('Deploy CMMS') {
             steps {
-                echo '========== DEPLOYING CMMS =========='
+                echo '========== DEPLOYING CMMS FROM AWS ECR =========='
 
-                    withCredentials([
-                        string(
-                            credentialsId: 'cmms-db-password',
-                            variable: 'DB_PASSWORD'
-                             ),
-                        string(
-                            credentialsId: 'cmms-jwt-secret',
-                            variable: 'JWT_SECRET_VALUE'
-                            )
-                    ]) {
-                   sh '''
-                       echo "Deploying Docker image: cmms-app:${BUILD_NUMBER}"
+                withCredentials([
+                    string(
+                        credentialsId: 'cmms-db-password',
+                        variable: 'DB_PASSWORD'
+                    ),
+                    string(
+                        credentialsId: 'cmms-jwt-secret',
+                        variable: 'JWT_SECRET_VALUE'
+                    )
+                ]) {
+                    sh '''
+                        ECR_REGISTRY="135692633479.dkr.ecr.ap-south-1.amazonaws.com"
+                        ECR_REPOSITORY="cmms-app"
+                        IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:${BUILD_NUMBER}"
 
-                       docker rm -f cmms-app 2>/dev/null || true
+                        echo "Deploying image: $IMAGE"
 
-                       docker run -d \
-                       --name cmms-app \
-                       --restart unless-stopped \
-                       --network cmms-springboot_default \
-                       -p 8080:8080 \
-                       -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cmms_db \
-                       -e SPRING_DATASOURCE_USERNAME=postgres \
-                       -e SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD" \
-                       -e JWT_SECRET="$JWT_SECRET_VALUE" \
-                       -e JWT_EXPIRATION_MS=86400000 \
-                       -e CMMS_SEED_ENABLED=true \
-                       cmms-app:${BUILD_NUMBER}
+                        echo "Logging in to AWS ECR..."
+                        aws ecr get-login-password --region ap-south-1 | \
+                        docker login --username AWS --password-stdin $ECR_REGISTRY
 
-                      echo "Waiting for CMMS application..."
-                          sleep 15
+                        echo "Pulling image from ECR..."
+                        docker pull $IMAGE
 
-                      docker ps --filter name=cmms-app
+                        echo "Stopping old CMMS container..."
+                        docker rm -f cmms-app 2>/dev/null || true
+
+                        echo "Starting new CMMS container..."
+
+                        docker run -d \
+                          --name cmms-app \
+                          --restart unless-stopped \
+                          --network cmms-springboot_default \
+                          -p 8080:8080 \
+                          -e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cmms_db \
+                          -e SPRING_DATASOURCE_USERNAME=postgres \
+                          -e SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD" \
+                          -e JWT_SECRET="$JWT_SECRET_VALUE" \
+                          -e JWT_EXPIRATION_MS=86400000 \
+                          -e CMMS_SEED_ENABLED=true \
+                          $IMAGE
+
+                        echo "Waiting for CMMS application..."
+                        sleep 15
+
+                        echo "Checking container..."
+                        docker ps --filter name=cmms-app
+
+                        echo "Checking application..."
+                        curl -f http://localhost:8080/ || exit 1
+
+                        echo "CMMS deployment successful."
                     '''
-                     }
-                } 
-          }
-
+                }
+            }
+        }
+	
         stage('Archive Artifact') {
             steps {
                 echo '========== ARCHIVING ARTIFACT =========='
