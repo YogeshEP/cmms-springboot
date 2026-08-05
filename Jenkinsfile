@@ -153,7 +153,6 @@
                         docker rm -f cmms-app 2>/dev/null || true
 
                         echo "Starting new CMMS container..."
-
                         docker run -d \
                           --name cmms-app \
                           --restart unless-stopped \
@@ -167,20 +166,48 @@
                           -e CMMS_SEED_ENABLED=true \
                           $IMAGE
 
-                        echo "Waiting for CMMS application..."
-                        sleep 15
+                        echo "Waiting for CMMS application health check..."
 
-                        echo "Checking container..."
+                        HEALTHY=false
+
+                        for i in $(seq 1 12); do
+                            echo "Health check attempt $i/12..."
+
+                            if curl -fs http://localhost:8080/actuator/health | \
+                               grep -q '"status":"UP"'; then
+
+                                HEALTHY=true
+                                echo "CMMS application is HEALTHY."
+                                break
+                            fi
+
+                            echo "Application not ready yet. Waiting 5 seconds..."
+                            sleep 5
+                        done
+
+                        if [ "$HEALTHY" != "true" ]; then
+                            echo "=========================================="
+                            echo "ERROR: CMMS APPLICATION IS UNHEALTHY"
+                            echo "=========================================="
+
+                            echo "Last 100 container log lines:"
+                            docker logs --tail 100 cmms-app || true
+
+                            exit 1
+                        fi
+
+                        echo "Checking running container..."
                         docker ps --filter name=cmms-app
 
-                        echo "Checking application..."
-                        curl -f http://localhost:8080/ || exit 1
-
-                        echo "CMMS deployment successful."
+                        echo "=========================================="
+                        echo "CMMS DEPLOYMENT SUCCESSFUL"
+                        echo "Health Check: UP"
+                        echo "Image: $IMAGE"
+                        echo "=========================================="
                     '''
                 }
             }
-        }
+        }     
 	
         stage('Archive Artifact') {
             steps {
