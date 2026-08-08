@@ -377,6 +377,33 @@
                 }
             }
         }     
+
+
+        stage('Docker Cleanup') {
+            steps {
+                echo '========== DOCKER CLEANUP =========='
+
+                    sh '''
+                        echo "Docker disk usage BEFORE cleanup:"
+                        docker system df
+
+                        echo "Removing dangling Docker images..."
+                        docker image prune -f
+
+                        echo "Removing unused Docker build cache..."
+                        docker builder prune -f
+
+                        echo "Docker disk usage AFTER cleanup:"
+                        docker system df
+
+                        echo "Currently running CMMS container:"
+                        docker ps --filter name=cmms-app
+
+                        echo "Currently deployed CMMS image:"
+                        docker inspect cmms-app --format '{{.Config.Image}}'
+                       '''
+            }
+        }
 	
         stage('Archive Artifact') {
             steps {
