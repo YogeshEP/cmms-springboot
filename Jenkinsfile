@@ -123,12 +123,15 @@
 
         stage('Deploy CMMS with Ansible') {
     steps {
+        echo '========== DEPLOYING CMMS WITH ANSIBLE =========='
+
         sh '''
             echo "=========================================="
             echo "       ANSIBLE CMMS DEPLOYMENT"
             echo "=========================================="
 
             echo "Jenkins Build Number: ${BUILD_NUMBER}"
+            echo "Image Tag: ${BUILD_NUMBER}"
 
             cd /opt/cmms-ansible
 
@@ -142,8 +145,7 @@
             echo "=========================================="
         '''
     }
-}     
-
+}
 
         stage('Docker Cleanup') {
             steps {
@@ -182,32 +184,36 @@
     }
 
     post {
-        success {
-            echo '''
-            ==========================================
-                 CMMS CI PIPELINE SUCCESS
-            ==========================================
-            Checkout        : SUCCESS
-            Maven Test      : SUCCESS
-            SonarQube       : SUCCESS
-            Maven Package   : SUCCESS
-            Artifact        : ARCHIVED
-            ==========================================
-            '''
-        }
+    success {
+        echo '''
+        ==========================================
+             CMMS CI PIPELINE SUCCESS
+        ==========================================
+        Checkout          : SUCCESS
+        Maven Test        : SUCCESS
+        SonarQube         : SUCCESS
+        Quality Gate      : SUCCESS
+        Maven Package     : SUCCESS
+        Docker Build      : SUCCESS
+        ECR Push          : SUCCESS
+        Ansible Deploy    : SUCCESS
+        Docker Cleanup    : SUCCESS
+        Artifact          : ARCHIVED
+        ==========================================
+        '''
+    }
 
-        failure {
-            echo '''
-            ==========================================
-                 CMMS CI PIPELINE FAILED
-            ==========================================
-            Check the failed stage in Console Output.
-            ==========================================
-            '''
-        }
+    failure {
+        echo '''
+        ==========================================
+             CMMS CI PIPELINE FAILED
+        ==========================================
+        Check the failed stage in Console Output.
+        ==========================================
+        '''
+    }
 
-        always {
-            echo 'CMMS Jenkins Pipeline execution completed.'
-        }
+    always {
+        echo 'CMMS Jenkins Pipeline execution completed.'
     }
 }
